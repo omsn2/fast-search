@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Search - Settings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .settings-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .settings-header {
+            margin-bottom: 32px;
+        }
+
+        .settings-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .settings-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .settings-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .settings-section h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: var(--primary);
+        }
+
+        .directory-list {
+            margin-bottom: 16px;
+        }
+
+        .directory-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .directory-path {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="settings-container">
+        <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Search
+        </a>
+
+        <div class="settings-header">
+            <h1>⚙️ Settings</h1>
+            <p>Configure which directories to index for fast search</p>
+        </div>
+
+        <div id="statusMessage"></div>
+
+        <div class="settings-section">
+            <h2>📁 Indexed Directories</h2>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                Only files in these directories will be searchable. Add or remove directories to control your privacy.
+            </p>
+
+            <div class="directory-list" id="directoryList">
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">
+                    Loading...
+                </div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="newDirectory"
+                    placeholder="Enter directory path (e.g., C:\Users\YourName\Documents)" />
+                <button class="btn btn-primary" onclick="addDirectory()">Add Directory</button>
+            </div>
+
+            <div style="margin-top: 16px;">
+                <button class="btn btn-secondary" onclick="reindexAll()">🔄 Reindex All Directories</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>🔒 Privacy & Exclusions</h2>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                These directories are automatically excluded from indexing for your privacy.
+            </p>
+
+            <div id="excludedDirs" style="font-family: monospace; font-size: 12px; color: var(--text-muted);">
+                Loading...
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>🚀 Startup & Shortcuts</h2>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                Configure how Fast Search starts and responds to shortcuts.
+            </p>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <input type="checkbox" id="autostartToggle" onchange="toggleAutoStart()"
+                        style="width: 20px; height: 20px; cursor: pointer;">
+                    <div>
+                        <div style="font-size: 14px; color: var(--text-primary);">Start with Windows</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">
+                            Automatically launch Fast Search when you log in
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            <div
+                style="padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px;">
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                    <strong>Global Hotkey:</strong> Ctrl+Space
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                    Press Ctrl+Space anywhere to open Fast Search<br>
+                    <em>Note: Requires running the desktop app (desktop_app.py)</em>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='settings.js') }}"></script>
+</body>
+
+</html>
