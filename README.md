@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
+[![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen.svg)](VERSION.txt)
 
 A **professional, privacy-first desktop search application** for Windows with sub-millisecond search speed, beautiful UI, and full system integration.
 
@@ -21,12 +22,14 @@ A **professional, privacy-first desktop search application** for Windows with su
 - ⌨️ **Keyboard-First**: Full navigation with arrow keys
 - 🖼️ **File Type Icons**: Visual indicators for 15+ file types
 - ✨ **Smooth Animations**: Polished, responsive interactions
+- 🎯 **Custom FS Icon**: Professional branding with custom icon
 
 ### 🔧 System Integration
 - 🖼️ **System Tray**: Runs in background with tray icon
 - ⚡ **Global Hotkey**: Press `Ctrl+Space` from anywhere
 - 🚀 **Auto-Start**: Optionally start with Windows
 - 📂 **File Operations**: Open files/folders with one click
+- 🖥️ **Desktop Shortcut**: One-click access with custom FS icon
 
 ### 🔒 Privacy & Control
 - 🏠 **100% Local**: No cloud, no tracking, no internet required
@@ -48,36 +51,58 @@ A **professional, privacy-first desktop search application** for Windows with su
 - **Python 3.10+** ([Download](https://www.python.org/downloads/))
 - **Windows 10/11** (tested on Windows 11)
 
-### Installation
+### Easy Installation (Recommended)
 
-1. **Clone the repository**:
+1. **Download/Clone the repository**:
 ```bash
 git clone https://github.com/yourusername/fast-search.git
 cd fast-search
 ```
 
-2. **Create virtual environment**:
+2. **Run the installer** (does everything for you!):
+```bash
+INSTALL.bat
+```
+
+The installer will:
+- ✅ Create a virtual environment
+- ✅ Install all dependencies
+- ✅ Generate custom FS icon
+- ✅ Create desktop shortcut with icon
+- ✅ Set up everything automatically
+
+3. **Launch Fast Search**:
+   - Double-click the **"Fast Search"** shortcut on your desktop, OR
+   - Run `launch-desktop-app.bat`
+
+4. **Start searching**:
+   - Press `Ctrl+Space` from anywhere to open search
+   - Add directories in Settings
+   - Start finding files instantly! 🎉
+
+### Manual Installation (Advanced Users)
+
+1. **Create virtual environment**:
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-3. **Install dependencies**:
+2. **Install dependencies**:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Index your files** (first time):
+3. **Create icon and shortcut**:
 ```bash
-python main.py index "C:\Users\YourName\Documents"
+python create_icon.py
+python create_desktop_shortcut.py
 ```
 
-5. **Launch the app**:
+4. **Launch the app**:
 ```bash
 .\launch-desktop-app.bat
 ```
-
-That's it! Press `Ctrl+Space` to search! 🎉
 
 ## 📖 Usage
 
@@ -193,13 +218,22 @@ System folders are automatically excluded:
 
 ## 📚 Documentation
 
-- [Quick Start Guide](QUICKSTART.md)
-- [UI Guide](UI_QUICKSTART.md)
-- [Phase 1: Core Engine](PHASE1_COMPLETE.md)
-- [Phase 2: Performance](PHASE2_COMPLETE.md)
-- [Phase 3: Desktop UI](PHASE3_COMPLETE.md)
-- [Phase 4: System Integration](PHASE4_COMPLETE.md)
-- [Complete Project Summary](PROJECT_SUMMARY.md)
+### User Documentation
+- [README for Users](README-USERS.txt) - Simple getting started guide
+- [Main Documentation](README.md) - This file
+
+### Developer Documentation
+- [Release Notes](documents/RELEASE_NOTES.md) - What's new in v1.0.0
+- [Changelog](documents/CHANGELOG.md) - Detailed version history
+- [Quick Start Guide](documents/QUICKSTART.md) - Get started in 5 minutes
+- [UI Guide](documents/UI_QUICKSTART.md) - Using the interface
+- [Phase 1: Core Engine](documents/PHASE1_COMPLETE.md)
+- [Phase 2: Performance](documents/PHASE2_COMPLETE.md)
+- [Phase 3: Desktop UI](documents/PHASE3_COMPLETE.md)
+- [Phase 4: System Integration](documents/PHASE4_COMPLETE.md)
+- [Complete Project Summary](documents/PROJECT_SUMMARY.md)
+- [Distribution Guide](documents/DISTRIBUTION_GUIDE.md)
+- [Publishing Guide](documents/PUBLISHING_GUIDE.md)
 
 ## 🧪 Testing
 
@@ -208,10 +242,7 @@ Run the test suite:
 python -m pytest tests/
 ```
 
-Test Phase 2 features:
-```bash
-python test_phase2.py
-```
+For development testing documentation, see [documents/TESTING_GUIDE_PHASE4.md](documents/TESTING_GUIDE_PHASE4.md)
 
 ## 🤝 Contributing
 
@@ -251,7 +282,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you encounter any issues or have questions:
-- Open an [Issue](https://github.com/yourusername/fast-search/issues)
+- Open an [Issue](https://github.com/omsn2/fast-search/issues)
 - Check the [Documentation](docs/)
 - Read the [FAQ](docs/FAQ.md)
 
@@ -261,6 +292,6 @@ If you find this project useful, please consider giving it a star! ⭐
 
 ---
 
-**Made with ❤️ by [Your Name]**
+**Made with ❤️ by Omkar S N**
 
 *Fast, Private, Local Desktop Search*

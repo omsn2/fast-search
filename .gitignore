@@ -36,3 +36,6 @@ htmlcov/
 
 # Node (for Tauri UI later)
 node_modules/
+
+# Internal documentation and development files
+documents/
