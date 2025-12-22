@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
-[![Version](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)](VERSION.txt)
+[![Version](https://img.shields.io/badge/Version-1.3.0-brightgreen.svg)](VERSION.txt)
 
 A **professional, privacy-first desktop search application** for Windows with sub-millisecond search speed, beautiful UI, and full system integration.
 
@@ -28,7 +28,8 @@ A **professional, privacy-first desktop search application** for Windows with su
 
 ### 🔧 System Integration
 - 🖼️ **System Tray**: Runs in background with tray icon
-- ⚡ **Global Hotkey**: Press `Ctrl+Space` from anywhere
+- ⚡ **Global Hotkey**: Press `Ctrl+Space` from anywhere (customizable!)
+- ⚙️ **Customizable Hotkey**: Choose your own keyboard shortcut
 - 🚀 **Auto-Start**: Optionally start with Windows
 - 📂 **File Operations**: Open files/folders with one click
 - 🖥️ **Desktop Shortcut**: One-click access with custom FS icon

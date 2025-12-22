@@ -74,3 +74,40 @@ class UserSettings:
         """Clear all indexed directories."""
         self.settings['indexed_directories'] = []
         self._save_settings()
+    
+    # Hotkey Settings
+    DEFAULT_HOTKEY = {
+        "combination": "ctrl+space",
+        "modifiers": ["ctrl"],
+        "key": "space"
+    }
+    
+    def get_hotkey(self) -> dict:
+        """Get the current hotkey setting."""
+        return self.settings.get('hotkey', self.DEFAULT_HOTKEY.copy())
+    
+    def set_hotkey(self, combination: str, modifiers: List[str], key: str) -> bool:
+        """
+        Set a new hotkey.
+        
+        Args:
+            combination: Full hotkey string (e.g., "ctrl+shift+f")
+            modifiers: List of modifier keys
+            key: Main key
+            
+        Returns:
+            bool: True if successful
+        """
+        self.settings['hotkey'] = {
+            "combination": combination,
+            "modifiers": modifiers,
+            "key": key
+        }
+        self._save_settings()
+        return True
+    
+    def reset_hotkey(self) -> dict:
+        """Reset hotkey to default."""
+        self.settings['hotkey'] = self.DEFAULT_HOTKEY.copy()
+        self._save_settings()
+        return self.DEFAULT_HOTKEY.copy()

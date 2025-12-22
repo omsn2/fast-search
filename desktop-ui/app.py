@@ -263,6 +263,81 @@ def toggle_autostart():
         return jsonify({'success': False, 'error': str(e)})
 
 
+@app.route('/api/settings/hotkey', methods=['GET'])
+def get_hotkey():
+    """Get current hotkey setting."""
+    try:
+        from backend.config.user_settings import UserSettings
+        settings = UserSettings()
+        hotkey = settings.get_hotkey()
+        return jsonify(hotkey)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/settings/hotkey', methods=['POST'])
+def set_hotkey():
+    """Set new hotkey."""
+    try:
+        from backend.config.user_settings import UserSettings
+        from backend.config.hotkey_validator import validate_hotkey, parse_hotkey_string
+        
+        data = request.json
+        hotkey_str = data.get('hotkey', '').lower()
+        
+        # Validate
+        is_valid, error, warning = validate_hotkey(hotkey_str)
+        if not is_valid:
+            return jsonify({'error': error}), 400
+        
+        # Parse
+        modifiers, key, _ = parse_hotkey_string(hotkey_str)
+        
+        # Save
+        settings = UserSettings()
+        settings.set_hotkey(hotkey_str, modifiers, key)
+        
+        return jsonify({
+            'success': True,
+            'hotkey': hotkey_str,
+            'warning': warning
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/settings/hotkey/validate', methods=['POST'])
+def validate_hotkey_endpoint():
+    """Validate a hotkey combination."""
+    try:
+        from backend.config.hotkey_validator import validate_hotkey
+        
+        data = request.json
+        hotkey_str = data.get('hotkey', '').lower()
+        
+        is_valid, error, warning = validate_hotkey(hotkey_str)
+        
+        return jsonify({
+            'valid': is_valid,
+            'error': error,
+            'warning': warning
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/settings/hotkey/reset', methods=['POST'])
+def reset_hotkey():
+    """Reset hotkey to default."""
+    try:
+        from backend.config.user_settings import UserSettings
+        settings = UserSettings()
+        default = settings.reset_hotkey()
+        return jsonify(default)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 def run_server(port=5000, debug=False):
     """Run the Flask server."""
     app.run(host='127.0.0.1', port=port, debug=debug)

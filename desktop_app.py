@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from app import run_server
 from backend.utils.system_tray import SystemTray
 from backend.utils.global_hotkey import GlobalHotkey
+from backend.config.user_settings import UserSettings
 
 
 class FastSearchApp:
@@ -24,6 +25,7 @@ class FastSearchApp:
         self.hotkey = None
         self.window = None
         self.server_running = False
+        self.user_settings = UserSettings()
     
     def start_flask(self):
         """Start Flask server in a separate thread."""
@@ -74,9 +76,13 @@ class FastSearchApp:
         
         # Set up global hotkey
         if use_hotkey:
-            print("[App] Setting up global hotkey (Ctrl+Space)...")
+            # Load custom hotkey from settings
+            hotkey_config = self.user_settings.get_hotkey()
+            hotkey_combination = hotkey_config.get('combination', 'ctrl+space')
+            
+            print(f"[App] Setting up global hotkey ({hotkey_combination})...")
             self.hotkey = GlobalHotkey(
-                hotkey='ctrl+space',
+                hotkey=hotkey_combination,
                 on_trigger=self.show_window
             )
             
@@ -97,7 +103,9 @@ class FastSearchApp:
         if use_tray:
             print("  • System Tray: Right-click the tray icon for options")
         if use_hotkey and self.hotkey and self.hotkey.registered:
-            print("  • Global Hotkey: Press Ctrl+Space to open search")
+            hotkey_config = self.user_settings.get_hotkey()
+            hotkey_display = hotkey_config.get('combination', 'ctrl+space').replace('+', '+').upper()
+            print(f"  • Global Hotkey: Press {hotkey_display} to open search")
         print("  • Web Interface: http://127.0.0.1:5000")
         print("\nPress Ctrl+C to quit")
         print("=" * 60 + "\n")

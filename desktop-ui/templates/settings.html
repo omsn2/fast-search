@@ -219,14 +219,35 @@
                 </label>
             </div>
 
-            <div
-                style="padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px;">
-                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
-                    <strong>Global Hotkey:</strong> Ctrl+Space
+            <div style="margin-top: 20px;">
+                <div style="font-size: 14px; color: var(--text-primary); margin-bottom: 8px; font-weight: 500;">
+                    Global Hotkey
                 </div>
-                <div style="font-size: 12px; color: var(--text-muted);">
-                    Press Ctrl+Space anywhere to open Fast Search<br>
-                    <em>Note: Requires running the desktop app (desktop_app.py)</em>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                    Click the input and press your desired key combination
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <input type="text" id="hotkeyInput" readonly placeholder="Click and press your key combination"
+                        style="width: 100%; padding: 12px; background: var(--bg-primary); border: 2px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                    <div id="hotkeyStatus" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;"></div>
+                </div>
+
+                <div id="hotkeyValidation"
+                    style="display: none; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" id="saveHotkeyBtn" disabled onclick="saveHotkey()">
+                        Save Hotkey
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetHotkey()">
+                        Reset to Default
+                    </button>
+                </div>
+
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">
+                    <em>Note: Hotkey changes require restarting the desktop app to take effect</em>
                 </div>
             </div>
         </div>

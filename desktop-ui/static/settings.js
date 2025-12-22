@@ -206,6 +206,185 @@ async function loadAutoStartStatus() {
     }
 }
 
+// ===== Hotkey Settings =====
+
+let capturingHotkey = false;
+let currentHotkey = '';
+let pressedKeys = new Set();
+
+// Load current hotkey
+async function loadCurrentHotkey() {
+    try {
+        const response = await fetch('/api/settings/hotkey');
+        const data = await response.json();
+        currentHotkey = data.combination || 'ctrl+space';
+        document.getElementById('hotkeyInput').value = formatHotkeyDisplay(currentHotkey);
+    } catch (error) {
+        console.error('Failed to load hotkey:', error);
+        document.getElementById('hotkeyInput').value = 'Ctrl+Space';
+    }
+}
+
+// Format hotkey for display
+function formatHotkeyDisplay(hotkey) {
+    return hotkey.split('+').map(part => {
+        if (part === 'ctrl') return 'Ctrl';
+        if (part === 'shift') return 'Shift';
+        if (part === 'alt') return 'Alt';
+        if (part === 'win') return 'Win';
+        return part.charAt(0).toUpperCase() + part.slice(1);
+    }).join('+');
+}
+
+// Hotkey input focus
+const hotkeyInput = document.getElementById('hotkeyInput');
+hotkeyInput.addEventListener('focus', () => {
+    capturingHotkey = true;
+    pressedKeys.clear();
+    hotkeyInput.style.borderColor = 'var(--primary)';
+    hotkeyInput.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.2)';
+    document.getElementById('hotkeyStatus').textContent = 'Press your key combination...';
+    document.getElementById('hotkeyStatus').style.color = 'var(--primary)';
+});
+
+// Hotkey input blur
+hotkeyInput.addEventListener('blur', () => {
+    setTimeout(() => {
+        capturingHotkey = false;
+        pressedKeys.clear();
+        hotkeyInput.style.borderColor = 'var(--border)';
+        hotkeyInput.style.boxShadow = 'none';
+        document.getElementById('hotkeyStatus').textContent = '';
+    }, 200);
+});
+
+// Capture hotkey
+hotkeyInput.addEventListener('keydown', async (e) => {
+    if (!capturingHotkey) return;
+    
+    e.preventDefault();
+    
+    // Add key to pressed keys
+    const key = e.key.toLowerCase();
+    
+    // Track modifiers
+    if (e.ctrlKey) pressedKeys.add('ctrl');
+    if (e.shiftKey) pressedKeys.add('shift');
+    if (e.altKey) pressedKeys.add('alt');
+    if (e.metaKey) pressedKeys.add('win');
+    
+    // Add main key if it's not a modifier
+    if (!['control', 'shift', 'alt', 'meta'].includes(key)) {
+        pressedKeys.add(key === ' ' ? 'space' : key);
+    }
+    
+    // Build hotkey string
+    const modifiers = [];
+    const mainKeys = [];
+    
+    for (const k of pressedKeys) {
+        if (['ctrl', 'shift', 'alt', 'win'].includes(k)) {
+            modifiers.push(k);
+        } else {
+            mainKeys.push(k);
+        }
+    }
+    
+    if (mainKeys.length > 0) {
+        const hotkeyStr = [...modifiers, ...mainKeys].join('+');
+        hotkeyInput.value = formatHotkeyDisplay(hotkeyStr);
+        
+        // Validate
+        await validateHotkey(hotkeyStr);
+    }
+});
+
+// Validate hotkey
+async function validateHotkey(hotkeyStr) {
+    try {
+        const response = await fetch('/api/settings/hotkey/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hotkey: hotkeyStr })
+        });
+        
+        const data = await response.json();
+        const validation = document.getElementById('hotkeyValidation');
+        const saveBtn = document.getElementById('saveHotkeyBtn');
+        
+        if (data.valid) {
+            if (data.warning) {
+                validation.style.display = 'block';
+                validation.style.background = 'rgba(245, 158, 11, 0.1)';
+                validation.style.border = '1px solid #f59e0b';
+                validation.style.color = '#f59e0b';
+                validation.textContent = '⚠️ ' + data.warning;
+            } else {
+                validation.style.display = 'block';
+                validation.style.background = 'rgba(16, 185, 129, 0.1)';
+                validation.style.border = '1px solid var(--success)';
+                validation.style.color = 'var(--success)';
+                validation.textContent = '✓ Valid hotkey combination';
+            }
+            saveBtn.disabled = false;
+        } else {
+            validation.style.display = 'block';
+            validation.style.background = 'rgba(239, 68, 68, 0.1)';
+            validation.style.border = '1px solid #ef4444';
+            validation.style.color = '#ef4444';
+            validation.textContent = '✗ ' + data.error;
+            saveBtn.disabled = true;
+        }
+    } catch (error) {
+        console.error('Validation error:', error);
+    }
+}
+
+// Save hotkey
+async function saveHotkey() {
+    const hotkeyInput = document.getElementById('hotkeyInput').value;
+    const hotkeyStr = hotkeyInput.toLowerCase().replace(/\s/g, '');
+    
+    try {
+        const response = await fetch('/api/settings/hotkey', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hotkey: hotkeyStr })
+        });
+        
+        if (response.ok) {
+            showStatus('Hotkey updated! Please restart the desktop app for changes to take effect.', 'success');
+            currentHotkey = hotkeyStr;
+            document.getElementById('hotkeyValidation').style.display = 'none';
+        } else {
+            showStatus('Failed to update hotkey', 'error');
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showStatus('Failed to update hotkey', 'error');
+    }
+}
+
+// Reset hotkey
+async function resetHotkey() {
+    try {
+        const response = await fetch('/api/settings/hotkey/reset', {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            document.getElementById('hotkeyInput').value = 'Ctrl+Space';
+            currentHotkey = 'ctrl+space';
+            document.getElementById('hotkeyValidation').style.display = 'none';
+            showStatus('Hotkey reset to default (Ctrl+Space)', 'success');
+        }
+    } catch (error) {
+        console.error('Reset error:', error);
+        showStatus('Failed to reset hotkey', 'error');
+    }
+}
+
 // Initialize
 loadSettings();
 loadAutoStartStatus();
+loadCurrentHotkey();
