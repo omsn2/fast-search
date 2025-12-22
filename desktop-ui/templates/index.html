@@ -33,6 +33,93 @@
                     autocomplete="off" autofocus />
                 <div class="search-stats" id="searchStats"></div>
             </div>
+
+            <!-- Search History Dropdown -->
+            <div class="search-history-dropdown" id="searchHistoryDropdown">
+                <div class="history-header">
+                    <span class="history-title">
+                        <svg class="history-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Recent Searches
+                    </span>
+                    <button class="clear-all-btn" id="clearAllHistory" title="Clear all history">Clear All</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- History items will be inserted here dynamically -->
+                </div>
+            </div>
+
+            <!-- Advanced Filters Panel -->
+            <div class="filter-panel" id="filterPanel">
+                <div class="filter-header" id="filterHeader">
+                    <span class="filter-title">
+                        <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        Filters
+                        <span class="filter-count" id="filterCount"></span>
+                    </span>
+                    <button class="toggle-filters-btn" id="toggleFiltersBtn" title="Toggle filters">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="filter-controls" id="filterControls">
+                    <!-- File Type Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">File Type</label>
+                        <select class="filter-select" id="fileTypeFilter">
+                            <option value="">All Types</option>
+                            <option value="Documents">📄 Documents</option>
+                            <option value="Images">🖼️ Images</option>
+                            <option value="Code">💻 Code</option>
+                            <option value="Archives">📦 Archives</option>
+                            <option value="Spreadsheets">📊 Spreadsheets</option>
+                            <option value="Presentations">📽️ Presentations</option>
+                            <option value="Videos">🎬 Videos</option>
+                            <option value="Audio">🎵 Audio</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Modified Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">Date Modified</label>
+                        <select class="filter-select" id="dateFilter">
+                            <option value="">Any Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+
+                    <!-- File Size Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label">File Size</label>
+                        <select class="filter-select" id="sizeFilter">
+                            <option value="">Any Size</option>
+                            <option value="small">Small (&lt;1 MB)</option>
+                            <option value="medium">Medium (1-10 MB)</option>
+                            <option value="large">Large (&gt;10 MB)</option>
+                        </select>
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    <button class="clear-filters-btn" id="clearFiltersBtn">
+                        Clear All Filters
+                    </button>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div class="active-filters" id="activeFilters"></div>
+            </div>
         </div>
 
         <!-- Results List -->
@@ -62,6 +149,8 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='search-history.js') }}"></script>
+    <script src="{{ url_for('static', filename='filter-manager.js') }}"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 

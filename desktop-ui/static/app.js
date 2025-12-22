@@ -3,6 +3,13 @@
 let searchResults = [];
 let selectedIndex = -1;
 let searchTimeout = null;
+let lastSearchTime = 0;
+
+// Initialize Search History
+const searchHistory = new SearchHistory();
+
+// Initialize Filter Manager
+const filterManager = new FilterManager();
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
@@ -11,6 +18,21 @@ const resultsList = document.getElementById('resultsList');
 const emptyState = document.getElementById('emptyState');
 const searchStats = document.getElementById('searchStats');
 const indexStats = document.getElementById('indexStats');
+const historyDropdown = document.getElementById('searchHistoryDropdown');
+const historyList = document.getElementById('historyList');
+const clearAllHistoryBtn = document.getElementById('clearAllHistory');
+
+// Filter Panel Elements
+const filterPanel = document.getElementById('filterPanel');
+const filterHeader = document.getElementById('filterHeader');
+const toggleFiltersBtn = document.getElementById('toggleFiltersBtn');
+const filterControls = document.getElementById('filterControls');
+const fileTypeFilter = document.getElementById('fileTypeFilter');
+const dateFilter = document.getElementById('dateFilter');
+const sizeFilter = document.getElementById('sizeFilter');
+const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+const activeFiltersContainer = document.getElementById('activeFilters');
+const filterCount = document.getElementById('filterCount');
 
 // File type icons
 const fileIcons = {
@@ -85,9 +107,19 @@ async function searchFiles(query) {
         
         const data = await response.json();
         const elapsed = (performance.now() - startTime).toFixed(1);
+        lastSearchTime = elapsed;
         
         searchResults = data.results;
-        displayResults(searchResults, elapsed);
+        
+        // Apply active filters
+        const filteredResults = filterManager.applyFilters(searchResults);
+        
+        displayResults(filteredResults, elapsed, searchResults.length);
+        
+        // Add to search history
+        if (query.trim()) {
+            searchHistory.addSearch(query.trim(), filteredResults.length);
+        }
     } catch (error) {
         console.error('Search error:', error);
         showError('Search failed. Please try again.');
@@ -95,7 +127,7 @@ async function searchFiles(query) {
 }
 
 // Display results
-function displayResults(results, elapsed) {
+function displayResults(results, elapsed, totalCount = null) {
     if (results.length === 0) {
         showNoResults();
         return;
@@ -117,7 +149,13 @@ function displayResults(results, elapsed) {
         </div>
     `).join('');
     
-    searchStats.textContent = `${results.length} results in ${elapsed}ms`;
+    // Show filter info if filters are active
+    if (totalCount && totalCount !== results.length) {
+        searchStats.textContent = `${results.length} of ${totalCount} results in ${elapsed}ms`;
+    } else {
+        searchStats.textContent = `${results.length} results in ${elapsed}ms`;
+    }
+    
     selectedIndex = -1;
 }
 
@@ -258,13 +296,249 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ===== Search History Functions =====
+
+// Display search history dropdown
+function displaySearchHistory() {
+    const history = searchHistory.getHistory();
+    
+    if (history.length === 0) {
+        historyList.innerHTML = '<div class="history-empty">No recent searches</div>';
+    } else {
+        historyList.innerHTML = history.map(item => {
+            const escapedQuery = escapeHtml(item.query);
+            // Use data attribute to avoid issues with quotes in onclick
+            return `
+                <div class="history-item" data-query="${escapedQuery}">
+                    <div class="history-item-content">
+                        <div class="history-query">${escapedQuery}</div>
+                        <div class="history-meta">
+                            ${item.resultCount} result${item.resultCount !== 1 ? 's' : ''} • ${timeAgo(item.timestamp / 1000)}
+                        </div>
+                    </div>
+                    <button class="history-remove-btn" data-query="${escapedQuery}" title="Remove">✕</button>
+                </div>
+            `;
+        }).join('');
+        
+        // Add event listeners to history items
+        document.querySelectorAll('.history-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Don't trigger if clicking the remove button
+                if (!e.target.classList.contains('history-remove-btn')) {
+                    const query = item.getAttribute('data-query');
+                    handleHistoryClick(query);
+                }
+            });
+        });
+        
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.history-remove-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const query = btn.getAttribute('data-query');
+                handleRemoveHistory(query);
+            });
+        });
+    }
+    
+    historyDropdown.classList.add('active');
+}
+
+// Hide search history dropdown
+function hideSearchHistory() {
+    historyDropdown.classList.remove('active');
+}
+
+// Handle history item click - re-run search
+function handleHistoryClick(query) {
+    searchInput.value = query;
+    hideSearchHistory();
+    searchFiles(query);
+}
+
+// Handle remove single history item
+function handleRemoveHistory(query) {
+    searchHistory.removeSearch(query);
+    displaySearchHistory();
+}
+
+// Handle clear all history
+function handleClearAllHistory() {
+    if (confirm('Clear all search history?')) {
+        searchHistory.clearHistory();
+        displaySearchHistory();
+    }
+}
+
+// ===== Filter Functions =====
+
+// Toggle filter panel
+function toggleFilterPanel() {
+    filterPanel.classList.toggle('expanded');
+}
+
+// Handle filter change
+function handleFilterChange(filterType, value) {
+    switch(filterType) {
+        case 'fileType':
+            if (value) {
+                filterManager.setFileTypeFilter(value);
+            } else {
+                filterManager.clearFilter('fileType');
+            }
+            break;
+        case 'date':
+            if (value) {
+                filterManager.setDateFilter(value);
+            } else {
+                filterManager.clearFilter('date');
+            }
+            break;
+        case 'size':
+            if (value) {
+                filterManager.setSizeFilter(value);
+            } else {
+                filterManager.clearFilter('size');
+            }
+            break;
+    }
+    
+    // Re-apply filters to current results
+    applyCurrentFilters();
+}
+
+// Apply filters to current results
+function applyCurrentFilters() {
+    if (searchResults.length === 0) return;
+    
+    const filtered = filterManager.applyFilters(searchResults);
+    displayResults(filtered, lastSearchTime, searchResults.length);
+    displayActiveFilters();
+    updateFilterCount();
+}
+
+// Display active filter chips
+function displayActiveFilters() {
+    const activeFilters = filterManager.getActiveFilters();
+    
+    if (activeFilters.length === 0) {
+        activeFiltersContainer.innerHTML = '';
+        return;
+    }
+    
+    activeFiltersContainer.innerHTML = activeFilters.map(filter => `
+        <div class="filter-chip">
+            <span>${escapeHtml(filter.label)}</span>
+            <button class="filter-chip-remove" 
+                    data-filter-type="${filter.type}" 
+                    title="Remove filter">✕</button>
+        </div>
+    `).join('');
+    
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.filter-chip-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const filterType = btn.getAttribute('data-filter-type');
+            removeFilter(filterType);
+        });
+    });
+}
+
+// Remove individual filter
+function removeFilter(filterType) {
+    filterManager.clearFilter(filterType);
+    
+    // Reset corresponding UI control
+    switch(filterType) {
+        case 'fileType':
+            fileTypeFilter.value = '';
+            break;
+        case 'date':
+            dateFilter.value = '';
+            break;
+        case 'size':
+            sizeFilter.value = '';
+            break;
+    }
+    
+    applyCurrentFilters();
+}
+
+// Clear all filters
+function clearAllFilters() {
+    filterManager.clearAllFilters();
+    
+    // Reset all UI controls
+    fileTypeFilter.value = '';
+    dateFilter.value = '';
+    sizeFilter.value = '';
+    
+    applyCurrentFilters();
+}
+
+// Update filter count badge
+function updateFilterCount() {
+    const count = filterManager.getActiveFilterCount();
+    filterCount.textContent = count > 0 ? count : '';
+    
+    // Enable/disable clear button
+    clearFiltersBtn.disabled = count === 0;
+}
+
 // Event Listeners
 searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
+    
+    // Hide history when typing
+    if (e.target.value.trim()) {
+        hideSearchHistory();
+    }
+    
     searchTimeout = setTimeout(() => {
         searchFiles(e.target.value);
     }, 150); // Debounce 150ms
 });
+
+// Show history when input is focused and empty
+searchInput.addEventListener('focus', () => {
+    if (!searchInput.value.trim()) {
+        displaySearchHistory();
+    }
+});
+
+// Hide history when clicking outside
+document.addEventListener('click', (e) => {
+    const searchContainer = document.querySelector('.search-container');
+    if (!searchContainer.contains(e.target)) {
+        hideSearchHistory();
+    }
+});
+
+// Clear all history button
+clearAllHistoryBtn.addEventListener('click', handleClearAllHistory);
+
+// Filter panel toggle
+filterHeader.addEventListener('click', toggleFilterPanel);
+toggleFiltersBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent double toggle from header click
+});
+
+// Filter controls
+fileTypeFilter.addEventListener('change', (e) => {
+    handleFilterChange('fileType', e.target.value);
+});
+
+dateFilter.addEventListener('change', (e) => {
+    handleFilterChange('date', e.target.value);
+});
+
+sizeFilter.addEventListener('change', (e) => {
+    handleFilterChange('size', e.target.value);
+});
+
+// Clear all filters
+clearFiltersBtn.addEventListener('click', clearAllFilters);
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {
@@ -298,6 +572,7 @@ document.addEventListener('keydown', (e) => {
         case 'Escape':
             searchInput.value = '';
             showEmptyState();
+            hideSearchHistory();
             searchInput.focus();
             break;
     }

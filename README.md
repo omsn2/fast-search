@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://www.microsoft.com/windows)
-[![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen.svg)](VERSION.txt)
+[![Version](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)](VERSION.txt)
 
 A **professional, privacy-first desktop search application** for Windows with sub-millisecond search speed, beautiful UI, and full system integration.
 
@@ -23,6 +23,8 @@ A **professional, privacy-first desktop search application** for Windows with su
 - 🖼️ **File Type Icons**: Visual indicators for 15+ file types
 - ✨ **Smooth Animations**: Polished, responsive interactions
 - 🎯 **Custom FS Icon**: Professional branding with custom icon
+- 📜 **Search History**: Quick access to recent searches (last 20)
+- 🔽 **Advanced Filters**: Filter by type, date, size in real-time
 
 ### 🔧 System Integration
 - 🖼️ **System Tray**: Runs in background with tray icon

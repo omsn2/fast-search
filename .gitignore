@@ -38,4 +38,4 @@ htmlcov/
 node_modules/
 
 # Internal documentation and development files
-documents/
+/documents
